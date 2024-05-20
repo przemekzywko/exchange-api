@@ -11,20 +11,24 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
+
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/api/v1/currencies/**").permitAll()
-                .antMatchers("/api/v1/currencies/exchange").hasRole("ADMIN")
-                .antMatchers("/api/v1/currencies/exchange/confirm").hasRole("USER")
-                .anyRequest().authenticated()
-                .and()
-                .httpBasic();
+        http.csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/v1/currencies/**").permitAll()
+                        .requestMatchers("/api/v1/currencies/exchange").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/currencies/exchange/confirm").hasRole("USER")
+                        .anyRequest().authenticated()
+                )
+                .httpBasic(withDefaults());
         return http.build();
     }
 

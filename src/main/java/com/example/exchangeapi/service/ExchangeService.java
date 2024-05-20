@@ -2,9 +2,10 @@ package com.example.exchangeapi.service;
 
 import com.example.exchangeapi.mapper.CurrencyMapper;
 import com.example.exchangeapi.model.CurrencyRateDto;
+import com.example.exchangeapi.model.ExchangeEvent;
 import com.example.exchangeapi.model.entity.Currency;
+import com.example.exchangeapi.rabbit.EventPublisher;
 import com.example.exchangeapi.repository.ExchangeRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,12 +17,13 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @Service
 @RequiredArgsConstructor
 public class ExchangeService {
 
     private final ExchangeRepository exchangeRepository;
-    private final EmailService emailService;
+    private final EventPublisher eventPublisher;
 
     public List<CurrencyRateDto> getAllCurrencies() {
         return exchangeRepository.findAll().stream()
@@ -48,6 +50,7 @@ public class ExchangeService {
     @Transactional
     public void exchangeCurrencyWithConfirmation(String from, String to, BigDecimal amount, String userEmail) {
         BigDecimal exchangedAmount = exchangeCurrency(from, to, amount);
-        emailService.sendExchangeConfirmation(userEmail, from, to, amount, exchangedAmount);
+        ExchangeEvent event = new ExchangeEvent(userEmail, from, to, amount, exchangedAmount);
+        eventPublisher.publishExchangeEvent(event);
     }
 }
