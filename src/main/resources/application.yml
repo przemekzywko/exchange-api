@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: exchange-api
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/currencies
+    username: root
+    password: root
+
+server:
+  port: 8083
