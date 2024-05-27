@@ -1,6 +1,9 @@
 package com.example.exchangeapi.controller;
 
+import com.example.exchangeapi.model.ConvertRequest;
+import com.example.exchangeapi.model.ConvertResult;
 import com.example.exchangeapi.model.CurrencyRateDto;
+import com.example.exchangeapi.model.ExchangeRequest;
 import com.example.exchangeapi.service.ExchangeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,20 +35,14 @@ public class ExchangeController {
 
     @PostMapping("/exchange")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<BigDecimal> exchangeCurrency(@RequestParam String from,
-                                                       @RequestParam String to,
-                                                       @RequestParam BigDecimal amount) {
-        BigDecimal exchangedAmount = exchangeService.exchangeCurrency(from, to, amount);
-        return new ResponseEntity<>(exchangedAmount, HttpStatus.OK);
+    public ResponseEntity<ConvertResult> exchangeCurrency(ConvertRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(exchangeService.exchangeCurrency(request));
     }
 
     @PostMapping("/exchange/confirm")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> exchangeCurrencyWithConfirmation(@RequestParam String from,
-                                                                   @RequestParam String to,
-                                                                   @RequestParam BigDecimal amount,
-                                                                   @RequestParam String email) {
-        exchangeService.exchangeCurrencyWithConfirmation(from, to, amount, email);
-        return new ResponseEntity<>("Exchange completed and confirmation sent to " + email, HttpStatus.OK);
+    public ResponseEntity<ConvertResult> exchangeCurrencyWithConfirmation(ConvertRequest request) {
+        ConvertResult result = exchangeService.exchangeCurrencyWithConfirmation(request);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }

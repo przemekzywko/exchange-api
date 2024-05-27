@@ -17,17 +17,26 @@ spring:
         format_sql: true
 
   mail:
-    host: smtp.example.com
+    host: smtp.gmail.com
     port: 587
-    username: your-email@example.com
-    password: your-email-password
+    username: przemekzywko@gmail.com
+    password: NNNN
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
-    from: your-email@example.com
+    from: przemekzywko@gmail.com
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+rabbit:
+  confirmationQueueName: confirmation_queue
 
 server:
   port: 8083

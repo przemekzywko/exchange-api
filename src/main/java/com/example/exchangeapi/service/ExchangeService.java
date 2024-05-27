@@ -1,15 +1,19 @@
 package com.example.exchangeapi.service;
 
 import com.example.exchangeapi.mapper.CurrencyMapper;
+import com.example.exchangeapi.model.ConvertConfirmationData;
+import com.example.exchangeapi.model.ConvertRequest;
+import com.example.exchangeapi.model.ConvertResult;
 import com.example.exchangeapi.model.CurrencyRateDto;
-import com.example.exchangeapi.model.ExchangeEvent;
+
 import com.example.exchangeapi.model.entity.Currency;
-import com.example.exchangeapi.rabbit.EventPublisher;
+
 import com.example.exchangeapi.repository.ExchangeRepository;
+import com.example.exchangeapi.sender.ConfirmationDataSender;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
@@ -22,8 +26,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ExchangeService {
 
+
     private final ExchangeRepository exchangeRepository;
-    private final EventPublisher eventPublisher;
+    private final ConfirmationDataSender sender;
+    private static final String HARD_CODED_EMAIL = "przemekzywko@gmail.com";
 
     public List<CurrencyRateDto> getAllCurrencies() {
         return exchangeRepository.findAll().stream()
@@ -37,20 +43,30 @@ public class ExchangeService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Currency not found"));
     }
 
-    public BigDecimal exchangeCurrency(String from, String to, BigDecimal amount) {
-        Currency fromCurrency = exchangeRepository.findByCode(from)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Currency not found"));
-        Currency toCurrency = exchangeRepository.findByCode(to)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Currency not found"));
+    public ConvertResult exchangeCurrency(ConvertRequest request) {
+        Currency fromCurrency = exchangeRepository.findByCode(request.getFrom())
+                .orElseThrow(() -> new EntityNotFoundException("Currency not found"));
+        Currency toCurrency = exchangeRepository.findByCode(request.getTo())
+                .orElseThrow(() -> new EntityNotFoundException("Currency not found"));
 
         BigDecimal rate = fromCurrency.getBid().divide(toCurrency.getAsk(), RoundingMode.HALF_UP);
-        return amount.multiply(rate);
+        BigDecimal result = request.getAmount().multiply(rate);
+        return ConvertResult.builder()
+                .from(request.getFrom())
+                .to(request.getTo())
+                .amount(request.getAmount())
+                .rate(rate)
+                .result(result)
+                .build();
     }
 
-    @Transactional
-    public void exchangeCurrencyWithConfirmation(String from, String to, BigDecimal amount, String userEmail) {
-        BigDecimal exchangedAmount = exchangeCurrency(from, to, amount);
-        ExchangeEvent event = new ExchangeEvent(userEmail, from, to, amount, exchangedAmount);
-        eventPublisher.publishExchangeEvent(event);
+    public ConvertResult exchangeCurrencyWithConfirmation(ConvertRequest request) {
+        ConvertResult convertResult = exchangeCurrency(request);
+        ConvertConfirmationData confirmationData = ConvertConfirmationData.builder()
+                .convertResult(convertResult)
+                .email(HARD_CODED_EMAIL)
+                .build();
+        sender.sendRates(confirmationData);
+        return convertResult;
     }
 }
