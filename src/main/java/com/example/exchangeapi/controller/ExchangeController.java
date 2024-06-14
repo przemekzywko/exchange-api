@@ -35,13 +35,13 @@ public class ExchangeController {
 
     @PostMapping("/exchange")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ConvertResult> exchangeCurrency(ConvertRequest request) {
+    public ResponseEntity<ConvertResult> exchangeCurrency(@RequestBody ConvertRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(exchangeService.exchangeCurrency(request));
     }
 
     @PostMapping("/exchange/confirm")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<ConvertResult> exchangeCurrencyWithConfirmation(ConvertRequest request) {
+    public ResponseEntity<ConvertResult> exchangeCurrencyWithConfirmation(@RequestBody ConvertRequest request) {
         ConvertResult result = exchangeService.exchangeCurrencyWithConfirmation(request);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
