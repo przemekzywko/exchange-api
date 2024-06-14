@@ -29,7 +29,7 @@ public class ExchangeService {
 
     private final ExchangeRepository exchangeRepository;
     private final ConfirmationDataSender sender;
-    private static final String HARD_CODED_EMAIL = "przemekzywko@gmail.com";
+    private static final String HARD_CODED_EMAIL = "przemekzywkotest@gmail.com";
 
     public List<CurrencyRateDto> getAllCurrencies() {
         return exchangeRepository.findAll().stream()

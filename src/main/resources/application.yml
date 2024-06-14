@@ -3,37 +3,24 @@ spring:
     name: exchange-api
 
   datasource:
-    url: jdbc:mysql://localhost:3306/currencies
-    username: root
-    password: root
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:currencies}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
-    hibernate:
-      ddl-auto: update
+#    hibernate:
+#      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
 
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: przemekzywko@gmail.com
-    password: NNNN
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-    from: przemekzywko@gmail.com
-
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBIT_HOST:rabbit}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USERNAME:guest}
+    password: ${RABBIT_PASSWORD:guest}
 
 rabbit:
   confirmationQueueName: confirmation_queue
