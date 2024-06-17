@@ -45,7 +45,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/api/v1/currencies/**").permitAll()
+                                .requestMatchers("/api/v1/currencies/**").authenticated()
                                 .requestMatchers("/api/v1/currencies/exchange").hasRole("ADMIN")
                                 .requestMatchers("/api/v1/currencies/exchange/confirm").hasRole("USER")
                                 .anyRequest().authenticated()

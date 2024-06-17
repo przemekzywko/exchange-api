@@ -28,15 +28,17 @@ public class ExchangeController {
     }
 
     @GetMapping("/{code}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<CurrencyRateDto> getCurrency(@PathVariable String code) {
         CurrencyRateDto currency = exchangeService.getCurrency(code);
         return new ResponseEntity<>(currency, HttpStatus.OK);
     }
 
     @PostMapping("/exchange")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ConvertResult> exchangeCurrency(@RequestBody ConvertRequest request) {
-        return ResponseEntity.status(HttpStatus.OK).body(exchangeService.exchangeCurrency(request));
+        ConvertResult result = exchangeService.exchangeCurrency(request);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @PostMapping("/exchange/confirm")
